@@ -4,149 +4,158 @@
 ---
 
 ## What is SSH?
-SSH (Secure Shell) is the primary protocol used to remotely manage Linux servers.
-It encrypts the connection — but encryption does NOT stop attackers from trying 
-thousands of passwords automatically. This is called a Brute Force attack.
+SSH (Secure Shell) is a protocol used to remotely control Linux servers
+through a terminal. Think of it as a secure remote desktop but through
+a command line.
 
-Every internet-facing SSH server receives automated brute force attempts within 
-MINUTES of going live. This is not theoretical — it happens constantly in the real world.
+SSH encrypts the connection — but encryption does NOT prevent an attacker
+from trying thousands of passwords automatically until one works.
+This is called a Brute Force attack.
+
+---
+
+## What is a Brute Force Attack?
+A brute force attack is when an attacker tries every possible password
+from a list until the correct one is found. No hacking skills required.
+Just a tool, a wordlist, and time.
+
+The scary reality — every server connected to the internet receives
+automated brute force attempts within minutes of going online.
+This is not theoretical. It happens every single day.
 
 ---
 
 ## What is Hydra?
-Hydra is a fast and flexible password brute force tool that supports 50+ protocols
-including SSH, FTP, Telnet, HTTP, RDP and more. It automates credential testing
-at high speed — trying hundreds of passwords per minute automatically.
+Hydra is a tool that automates password brute forcing.
+Instead of manually trying passwords one by one, Hydra does it
+automatically at high speed against protocols like SSH, FTP, and more.
 
 ---
 
 ## Lab Environment
 | Role | Details |
 |------|---------|
-| Attacker | Kali Linux 2025.2 |
-| Target | Metasploitable 2 — 192.168.6.129 |
-| Tool | Hydra v9.5 |
-| Protocol | SSH — Port 22 |
+| Attacker Machine | Kali Linux 2025.2 |
+| Target Machine | Metasploitable 2 |
+| Target IP | 192.168.6.129 |
+| Tool Used | Hydra v9.5 |
+| Protocol Attacked | SSH on Port 22 |
 
 ---
 
-## Vulnerability Found
-Target was running OpenSSH 4.7p1 released in 2008.
-This version has absolutely no brute force protection — no rate limiting,
-no account lockout, no fail2ban. An attacker can try unlimited passwords 
-with zero consequences until they get in.
+## Vulnerability Identified
+The target was running OpenSSH 4.7p1 which was released in 2008.
+This version has zero brute force protection meaning an attacker
+can try unlimited passwords with no cooldown and no lockout.
 
-Combined with a weak default password — this system was compromised in under 30 seconds.
+The target also had a weak default password which made it
+even easier to crack.
 
 ---
 
-## Attack Steps
+## Attack Walkthrough
 
 ### Step 1 — Reconnaissance
-Confirmed SSH is running and identified the exact version:
+First confirmed that SSH is running on the target:
 ```
 nmap -sV -p 22 192.168.6.129
-Result: 22/tcp open ssh OpenSSH 4.7p1
 ```
+Result showed port 22 open with OpenSSH 4.7p1 running.
 
-### Step 2 — Manual Connection Attempt
-Attempted manual SSH login to confirm connectivity and understand 
-what legacy algorithm errors appear with such an old SSH version.
+### Step 2 — Manual Connection
+Tried connecting manually to confirm the target responds
+and to understand what error messages appear with such
+an old SSH version.
 
-### Step 3 — Wordlist Creation
-Created a targeted password list for the lab.
-In real attacks, rockyou.txt (14 million passwords) or custom 
-breach databases are used.
+### Step 3 — Creating a Wordlist
+Created a small password list for the lab.
+In real attacks, hackers use wordlists with millions of
+real passwords leaked from previous data breaches.
 
-### Step 4 — Brute Force With Hydra
+### Step 4 — Running Hydra
 ```
 hydra -l msfadmin -P small_pass.txt ssh://192.168.6.129 -t 4 -V
 ```
-Hydra systematically tried each password until it found the match.
+Hydra tried each password one by one automatically.
 
-### Step 5 — Credentials Cracked
+### Step 5 — Password Cracked
 ```
 [22][ssh] host: 192.168.6.129   login: msfadmin   password: msfadmin
 ```
-Full SSH access gained. Attack complete.
+Full SSH access gained. The entire attack took under 30 seconds.
 
-### Step 6 — Auth Log Analysis
-After gaining access, pulled /var/log/auth.log from the target.
-This shows exactly what a SOC analyst sees during a brute force attack —
-multiple Failed password entries followed by one Accepted password entry.
+### Step 6 — Checking the Logs
+After gaining access, pulled the authentication log from the target.
+This log shows every failed and successful login attempt made
+during the attack. This is exactly what a SOC analyst would
+investigate after receiving a brute force alert.
 
 ---
 
-## What The Auth Log Shows (SOC Perspective)
+## What the Auth Log Looks Like
 ```
 Failed password for msfadmin from 192.168.6.128
 Failed password for msfadmin from 192.168.6.128
 Failed password for msfadmin from 192.168.6.128
 Accepted password for msfadmin from 192.168.6.128
 ```
-Pattern: Multiple failures + one success from same IP = brute force + compromise.
-This is a CRITICAL alert in any SOC environment.
+Multiple failures followed by one success from the same IP address
+is the classic pattern of a successful brute force attack.
+Any SOC analyst seeing this pattern must treat it as an active incident.
 
 ---
 
-## MITRE ATT&CK Mapping
+## MITRE ATT&CK
 | Field | Detail |
 |-------|--------|
 | Tactic | Credential Access |
 | Technique | T1110.001 — Brute Force: Password Guessing |
-| Platform | Linux |
 
 ---
 
-## SOC Detection Rules
-
-**Splunk:**
-```
-index=linux sourcetype=secure "Failed password"
-| stats count by src_ip
-| where count > 10
-```
-
-**Alert Rule:**
-More than 10 failed SSH logins from single IP in 60 seconds = brute force in progress.
-Successful login after multiple failures = compromised account. Immediate investigation required.
+## How SOC Analysts Detect This
+- More than 10 failed login attempts from one IP in 60 seconds
+- Successful login immediately after multiple failures
+- Login attempts happening at unusual hours like 3 AM
+- Login from a foreign country or unknown IP address
 
 ---
 
 ## How Real Attackers Stay Hidden
-- They use distributed brute force — 1000 different IPs each trying 1 password
-- No single IP gets blocked by fail2ban
-- They spray slowly — 1 attempt every 30 minutes to avoid detection
-- They use leaked credential databases — 60-80% of users reuse passwords
+Instead of thousands of attempts from one IP which gets blocked,
+real attackers spread the attack across hundreds of different IPs
+each trying only one or two passwords. This way no single IP
+gets flagged and the attack stays under the radar.
 
 ---
 
-## Defence Mechanisms
-| Defence | How It Helps |
+## How to Defend Against This
+| Defence | What it Does |
 |---------|-------------|
-| Install fail2ban | Auto-bans IPs after N failed logins |
-| Disable password auth | Forces SSH key pairs — passwords useless |
-| Change SSH port | Reduces automated bot traffic by 90% |
-| Enable MFA | Even cracked password is not enough |
-| VPN-only SSH | SSH not even reachable without VPN |
+| Install fail2ban | Automatically blocks IPs after too many failed logins |
+| Use SSH keys instead of passwords | Password becomes completely useless to attacker |
+| Change SSH port from 22 | Reduces automated attack traffic significantly |
+| Disable root login over SSH | Attacker cannot directly target the most powerful account |
+| Enable two factor authentication | Even correct password is not enough to get in |
 
 ---
 
 ## Evidence Files
-| File | Description |
-|------|-------------|
-| hydra_results.txt | Full Hydra output showing cracked credentials |
-| auth_log_sample.txt | Auth logs from target showing brute force pattern |
-| nmap_ssh_scan.txt | Reconnaissance scan output |
-| screenshots/ | Visual proof of every attack step |
+| File | What it Contains |
+|------|-----------------|
+| hydra_results.txt | Full Hydra output showing the cracked password |
+| auth_log_sample.txt | Login logs from the target machine |
+| nmap_ssh_scan.txt | Nmap scan showing port 22 open |
+| screenshots/ | Visual proof of every step of the attack |
 
 ---
 
-## Key Takeaway
-SSH brute force is one of the most common attacks in the world.
-The defence is simple — disable password authentication entirely and use SSH keys.
-Yet thousands of servers get compromised this way every single day
-because administrators never implement basic hardening.
+## Key Lesson
+SSH brute force is one of the most common attacks in existence.
+The fix is simple — disable password login and use SSH keys instead.
+Yet thousands of servers get compromised this way every day
+because administrators skip basic security hardening.
 
-As a SOC analyst — any SSH brute force alert must be treated as
-an active incident until proven otherwise.
+As a SOC analyst, any brute force alert on SSH must be
+investigated immediately and treated as a live incident
+until proven otherwise.
