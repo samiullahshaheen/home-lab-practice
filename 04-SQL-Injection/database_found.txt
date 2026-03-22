@@ -1,0 +1,13 @@
+sqlmap found 7 databases on 192.168.6.129:
+
+[*] dvwa
+[*] information_schema
+[*] metasploit
+[*] mysql
+[*] owasp10
+[*] tikiwiki
+[*] tikiwiki195
+
+Web server: Apache 2.2.8
+OS: Linux Ubuntu 8.04
+Database: MySQL >= 4.1
