@@ -1,0 +1,27 @@
+- Nikto v2.5.0/
++ Target Host: 192.168.6.129
++ Target Port: 80
++ GET /dvwa/: Cookie PHPSESSID created without the httponly flag. See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies: 
++ GET /dvwa/: Cookie security created without the httponly flag. See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies: 
++ GET /dvwa/: Retrieved x-powered-by header: PHP/5.2.4-2ubuntu5.10.
++ GET /dvwa/: The anti-clickjacking X-Frame-Options header is not present. See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options: 
++ GET /dvwa/: The X-Content-Type-Options header is not set. This could allow the user agent to render the content of the site in a different fashion to the MIME type. See: https://www.netsparker.com/web-vulnerability-scanner/vulnerabilities/missing-content-type-header/: 
++ GET /dvwa/robots.txt: Server may leak inodes via ETags, header found with file /dvwa/robots.txt, inode: 93164, size: 26, mtime: Tue Mar 16 01:56:22 2010. See: CVE-2003-1418: 
++ GET /dvwa/index: Uncommon header 'tcn' found, with contents: list.
++ GET /index: Apache mod_negotiation is enabled with MultiViews, which allows attackers to easily brute force file names. The following alternatives for 'index' were found: index.php. See: http://www.wisec.it/sectou.php?id=4698ebdc59d15,https://exchange.xforce.ibmcloud.com/vulnerabilities/8275: 
++ HEAD /dvwa: Apache/2.2.8 appears to be outdated (current is at least Apache/2.4.54). Apache 2.2.34 is the EOL for the 2.x branch.
++ OPTIONS OPTIONS: Allowed HTTP Methods: GET, HEAD, POST, OPTIONS, TRACE .
++ TRACE /: HTTP TRACE method is active which suggests the host is vulnerable to XST. See: https://owasp.org/www-community/attacks/Cross_Site_Tracing: 
++ GET /dvwa/config/: Directory indexing found.
++ GET /dvwa/config/: Configuration information may be available remotely.
++ GET /dvwa/?=PHPB8B5F2A0-3C92-11d3-A3A9-4C7B08C10000: PHP reveals potentially sensitive information via certain HTTP requests that contain specific QUERY strings. See: OSVDB-12184: 
++ GET /dvwa/?=PHPE9568F36-D428-11d2-A769-00AA001ACF42: PHP reveals potentially sensitive information via certain HTTP requests that contain specific QUERY strings. See: OSVDB-12184: 
++ GET /dvwa/?=PHPE9568F34-D428-11d2-A769-00AA001ACF42: PHP reveals potentially sensitive information via certain HTTP requests that contain specific QUERY strings. See: OSVDB-12184: 
++ GET /dvwa/?=PHPE9568F35-D428-11d2-A769-00AA001ACF42: PHP reveals potentially sensitive information via certain HTTP requests that contain specific QUERY strings. See: OSVDB-12184: 
++ GET /dvwa/login/: This might be interesting.
++ GET /dvwa/docs/: Directory indexing found.
++ GET /dvwa/CHANGELOG.txt: A changelog was found.
++ GET /dvwa/login.php: Admin login page/section found.
++ GET /dvwa/?-s: PHP allows retrieval of the source code via the -s parameter, and may allow command execution. See: CVE-2012-1823: 
++ GET /dvwa/login.php?-s: PHP allows retrieval of the source code via the -s parameter, and may allow command execution. See: CVE-2012-1823: 
++ GET /dvwa/CHANGELOG.txt: Version number implies that there is a SQL Injection in Drupal 7, which can be used for authentication bypass (Drupalgeddon). See: CVE-2014-3704 https://www.sektioneins.de/advisories/advisory-012014-drupal-pre-auth-sql-injection-vulnerability.html: 
