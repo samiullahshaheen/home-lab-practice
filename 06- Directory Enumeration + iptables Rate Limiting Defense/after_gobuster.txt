@@ -1,0 +1,21 @@
+/.hta                [33m (Status: 403)[0m [Size: 290]
+/.htpasswd           [33m (Status: 403)[0m [Size: 295]
+/.htaccess           [33m (Status: 403)[0m [Size: 295]
+/cgi-bin/            [33m (Status: 403)[0m [Size: 294]
+/dav                 [36m (Status: 301)[0m [Size: 317][34m [--> http://192.168.6.129/dav/][0m
+
+--- SCAN INTERRUPTED BY RATE LIMITING ---
+At 31.70% progress (1463/4615 requests), the iptables rate limiting rule
+began dropping packets. Gobuster received 200+ "context deadline exceeded"
+errors as the server stopped responding to aggressive scanning (50 threads).
+
+iptables DROP counter confirmed: 20,114 packets blocked.
+Full error output captured in screenshots 05 and 06.
+
+--- SCAN INTERRUPTED BY RATE LIMITING ---
+At 31.70% progress (1463/4615 requests), the iptables rate limiting rule
+began dropping packets. Gobuster received 200+ "context deadline exceeded"
+errors as the server stopped responding to aggressive scanning (50 threads).
+
+iptables DROP counter confirmed: 20,114 packets blocked.
+Full error output captured in screenshots 05 and 06.
