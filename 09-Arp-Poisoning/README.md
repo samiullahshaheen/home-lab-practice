@@ -3,7 +3,8 @@
 ## Objective
 ARP has no authentication, so an attacker can trick a victim and the
 gateway into sending traffic through them instead of each other. This lab
-performs an ARP poisoning MITM attack and checks whether Wazuh detects it.
+performs a full-duplex ARP poisoning MITM attack and captures plaintext
+credentials from intercepted traffic.
 
 ## Environment
 | Role | Host | IP |
@@ -35,38 +36,36 @@ Target for credential capture: public HTTP login test page (plaintext, no TLS)
 6. Bettercap captured the full plaintext POST request — username and
    password visible in the clear.
 7. Cleaned up: stopped spoofing/sniffing, disabled IP forwarding.
-8. Checked Wazuh for alerts across the attack window.
 
-## Evidence
-| Screenshot | Shows |
-|---|---|
-| `01_victim_ip_arp_before.png` | Victim baseline IP/ARP |
-| `01_attacker_ip_arp_before.png` | Attacker baseline IP/ARP |
-| `02_ip_forward_enabled.png` | IP forwarding on |
-| `03_bettercap_sniff_victim_traffic.png` | Victim traffic visible to attacker |
-| `04_victim_arp_poisoned_before_after.png` | Gateway MAC overwritten |
-| `05_victim_browser_http_login_page.png` | Victim on insecure login page |
-| `06_http_credentials_captured.png` | Plaintext credentials captured |
-| `07_cleanup_ip_forward_disabled.png` | Attack torn down |
-| `08_wazuh_no_detection_gap.png` | No Wazuh alerts fired |
+## Why This Is Dangerous
+ARP poisoning gives an attacker a silent man-in-the-middle position on
+any LAN where it's not blocked — no exploit, no malware, no user
+interaction beyond just being on the same network segment. Once in that
+position, the attacker sees everything unencrypted crossing the wire:
+plaintext HTTP logins, session cookies (enabling session hijacking even
+without the password), internal DNS queries revealing what systems a
+target talks to, and metadata from HTTPS traffic (SNI, destination IPs)
+useful for reconnaissance. It also opens the door to further attacks —
+DNS spoofing, SSL stripping, or injecting malicious content into
+unencrypted responses. On most real corporate networks this is trivial
+to pull off from a single compromised or rogue device, and it leaves
+almost no trace unless something is specifically watching Layer 2.
 
-## Detection Result
-Wazuh generated **no alerts**. Its default ruleset watches host-level
-logs, file integrity, and registry changes — it has no built-in ARP table
-monitoring, so Layer 2 attacks like this go unseen by default.
+## Remediation
+- **Dynamic ARP Inspection (DAI)** on managed switches — validates
+  ARP packets against a trusted binding table (DHCP snooping), drops
+  spoofed replies at the switch port.
+- **Port security / static ARP entries** for critical hosts (servers,
+  gateways) where feasible.
+- **Network segmentation (VLANs)** to shrink the broadcast domain an
+  attacker can poison.
+- **Encrypt everything** — HTTPS/TLS everywhere removes the payoff even
+  if the MITM position is achieved; plaintext HTTP should not exist on
+  a modern network.
+- **ARP monitoring tools** (arpwatch, osquery ARP table polling) to
+  detect MAC/IP binding changes and alert on anomalies.
+- **802.1X port-based authentication** to prevent unauthorized devices
+  from joining the network segment in the first place.
 
-## Fix
-- osquery polling the ARP table for unexpected MAC changes, forwarded to Wazuh
-- Suricata/Zeek with ARP spoof rules, feeding Wazuh
-- arpwatch on the segment, log-shipped to Wazuh
-
-**Next:** re-test this attack against Wazuh/Splunk after Attack 10, once
-detection improvements are in place.
-
-**Takeaway:** ARP poisoning is easy on an unsegmented LAN and exposes
-plaintext HTTP traffic completely. Host-only SIEM tuning misses it —
-Layer 2 monitoring has to be added deliberately.
-
-
-
-This attack was performed entirely within an isolated VMware host-only lab network with no internet-facing or third-party systems in scope.
+This attack was performed entirely within an isolated VMware host-only
+lab network with no internet-facing or third-party systems in scope.
